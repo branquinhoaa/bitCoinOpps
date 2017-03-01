@@ -1,5 +1,6 @@
 require 'rails_helper'
 
 RSpec.describe Opportunity, type: :model do
-  pending "add some examples to (or delete) #{__FILE__}"
+  it { should have_one(:bid).dependent(:destroy) }
+  it { should have_one(:ask).dependent(:destroy) }
 end
