@@ -6,7 +6,7 @@ git_source(:github) do |repo_name|
 end
 
 #EXCHANGE's API
-gem 'kraken_ruby'
+gem 'kraken_client', '~> 1.1.5'
 gem 'btce'
 
 gem "active_model_serializers"
