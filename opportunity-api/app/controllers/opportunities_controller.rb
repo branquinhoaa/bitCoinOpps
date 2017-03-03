@@ -1,13 +1,13 @@
 class OpportunitiesController < ApplicationController
   before_action :set_opportunity, only: [:show, :destroy]
 
-  # GET /todos
+  # GET /opportunities
   def index
     @opportunities = Opportunity.all
     json_response(@opportunities)
   end
 
-  # POST /todos
+  # POST /opportunities
   def create
     @opportunity = Opportunity.new
     @opportunity.bid = largest_bid
@@ -19,12 +19,12 @@ class OpportunitiesController < ApplicationController
     end
   end
 
-  # GET /todos/:id
+  # GET /opportunities/:id
   def show
     json_response(@opportunity)
   end
 
-  # DELETE /todos/:id
+  # DELETE /opportunities/:id
   def destroy
     @opportunity.destroy
     head :no_content
