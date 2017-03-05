@@ -61,17 +61,24 @@ RSpec.describe 'Opportunity API', type: :request do
 
           mocked_bcte = double
           allow(mocked_bcte).to receive(:json).and_return({"btc_usd" => {
-            "asks" => [[1251, 2.148485],[1351, 0.016032]],
+            "asks" => [[1151, 2.148485],[1351, 0.016032]],
             "bids" => [[900, 2.148485],[1200, 0.016032]]
             }})
           allow(Btce::Depth).to receive(:new).with("btc_usd").and_return(mocked_bcte)
           post '/opportunities'
         end
 
-        it 'creates a opportunity' do
+        it 'creates an opportunity' do
+          expect(json['id']).to_not be_nil
+        end
 
-          expect(json['bid']['value']).to eq(1500)
-          expect(json['ask']['value']).to eq(1200)
+        describe 'creates an opportunity' do
+          it 'with a largest bid' do
+            expect(json['bid']['value']).to eq(1500)
+          end
+          it 'with an lowest ask' do
+            expect(json['ask']['value']).to eq(1151.0)
+          end
         end
 
         it 'returns status code 201' do
