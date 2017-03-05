@@ -1,4 +1,8 @@
 class OpportunityCreatorService
+  def initialize
+    @data = initialize_data
+  end
+
   def create_opportunity
     opportunity = Opportunity.new
     opportunity.bid = largest_bid
@@ -8,32 +12,37 @@ class OpportunityCreatorService
 
   private
 
+  def initialize_data
+    {
+      kraken: KRAKEN::DataFetcher.new,
+      btce: BTCE::DataFetcher.new
+    }
+  end
+
   def lowest_ask
-    kraken =  KRAKEN.DataFetcher.get_kraken_data
-    btce = BTCE.DataFetcher.get_btce_data
+    lowest_ask = @data.collect do |exchange, exchange_data|
+      {
+        exchange: exchange,
+        order: exchange_data.asks.min_by { |order| order_value(order) }
+      }
+    end.min_by { |order| order_value(order[:order]) }
 
-    lowest_kraken = kraken['XXBTZUSD']['asks'].min_by{ |order| order[0] } #return value, amount, id
-    lowest_btce = btce.json["btc_usd"]["asks"].min_by{ |order| order[0] } #return value, amount
-
-    #build the ask object with the lowest ask value:
-    if lowest_kraken[0].to_f < lowest_btce[0]
-      Ask.new(exchange: 'kraken', value: lowest_kraken[0].to_f)
-    else
-      Ask.new(exchange: 'btce', value: lowest_btce[0])
-    end
+    Ask.new(exchange: lowest_ask[:exchange], value: order_value(lowest_ask[:order]))
   end
 
   def largest_bid
-    kraken = KRAKEN.DataFetcher.get_kraken_data
-    btce = BTCE.DataFetcher.get_btce_data
-    higher_kraken = kraken['XXBTZUSD']["bids"].max_by{ |order| order[0] } #here I choose the best kraken bid (more expensive)
-    higher_btce = btce.json["btc_usd"]["bids"].max_by{ |order| order[0] } #return value, amount
+    highest_bid = @data.collect do |exchange, exchange_data|
+      {
+        exchange: exchange,
+        order: exchange_data.bids.max_by { |order| order_value(order) }
+      }
+    end.max_by { |order| order_value(order[:order]) }
 
-    #build the bid object with the highest bid value
-    if higher_kraken[0].to_f > higher_btce[0]
-      Bid.new(exchange: 'kraken', value: higher_kraken[0].to_f)
-    else
-      Bid.new(exchange: 'btce', value: higher_btce[0])
-    end
+    Bid.new(exchange: highest_bid[:exchange], value: order_value(highest_bid[:order]))
+  end
+
+  # order is an array with: [value, amount, (id)?] 
+  def order_value(order)
+    order[0].to_f
   end
 end
