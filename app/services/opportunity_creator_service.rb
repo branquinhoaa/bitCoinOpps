@@ -8,19 +8,9 @@ class OpportunityCreatorService
 
   private
 
-  def get_kraken_data
-    client = KrakenClient.load
-    data = client.public.order_book('XXBTZUSD') # this is the code for USD BTC
-  end
-
-  def get_btce_data
-    require 'btce'
-    Btce::Depth.new "btc_usd"   #This method provides the information about active orders on the pair.
-  end
-
   def lowest_ask
-    kraken =  get_kraken_data
-    btce = get_btce_data
+    kraken =  KRAKEN.DataFetcher.get_kraken_data
+    btce = BTCE.DataFetcher.get_btce_data
 
     lowest_kraken = kraken['XXBTZUSD']['asks'].min_by{ |order| order[0] } #return value, amount, id
     lowest_btce = btce.json["btc_usd"]["asks"].min_by{ |order| order[0] } #return value, amount
@@ -34,8 +24,8 @@ class OpportunityCreatorService
   end
 
   def largest_bid
-    kraken = get_kraken_data
-    btce = get_btce_data
+    kraken = KRAKEN.DataFetcher.get_kraken_data
+    btce = BTCE.DataFetcher.get_btce_data
     higher_kraken = kraken['XXBTZUSD']["bids"].max_by{ |order| order[0] } #here I choose the best kraken bid (more expensive)
     higher_btce = btce.json["btc_usd"]["bids"].max_by{ |order| order[0] } #return value, amount
 
