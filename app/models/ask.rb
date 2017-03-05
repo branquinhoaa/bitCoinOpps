@@ -1,6 +1,7 @@
+# frozen_string_literal: true
 class Ask < ApplicationRecord
   belongs_to :opportunity
 
-  validates_presence_of :exchange
-  validates_presence_of :value
+  validates :exchange, presence: true
+  validates :value, presence: true
 end

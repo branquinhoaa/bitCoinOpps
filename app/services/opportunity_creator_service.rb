@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 class OpportunityCreatorService
   def initialize
     @data = initialize_data
@@ -25,7 +26,10 @@ class OpportunityCreatorService
         exchange: exchange,
         order: exchange_data.asks.min_by { |order| order_value(order) }
       }
-    end.min_by { |order| order_value(order[:order]) }
+    end
+    lowest_ask.min_by do |order|
+      order_value(order[:order])
+    end
 
     Ask.new(exchange: lowest_ask[:exchange], value: order_value(lowest_ask[:order]))
   end
@@ -36,12 +40,15 @@ class OpportunityCreatorService
         exchange: exchange,
         order: exchange_data.bids.max_by { |order| order_value(order) }
       }
-    end.max_by { |order| order_value(order[:order]) }
+    end
+    highest_bid.max_by do |order|
+      order_value(order[:order])
+    end
 
     Bid.new(exchange: highest_bid[:exchange], value: order_value(highest_bid[:order]))
   end
 
-  # order is an array with: [value, amount, (id)?] 
+  # order is an array with: [value, amount, (id)?]
   def order_value(order)
     order[0].to_f
   end

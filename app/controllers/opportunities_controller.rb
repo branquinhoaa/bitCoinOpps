@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 class OpportunitiesController < ApplicationController
   before_action :set_opportunity, only: [:show, :destroy]
 
