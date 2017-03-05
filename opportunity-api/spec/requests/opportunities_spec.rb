@@ -48,15 +48,30 @@ RSpec.describe 'Opportunity API', type: :request do
 
     # Test suite for POST /opportunities
     describe 'POST /opportunities' do
-      # valid payload
-      let(:valid_attributes) { { } }
 
       context 'when the request is valid' do
-        before { post '/opportunities', params: valid_attributes }
+        before do
+          mocked_kraken = double
+          allow(mocked_kraken).to receive(:public).and_return(mocked_kraken)
+          allow(mocked_kraken).to receive(:order_book).with('XXBTZUSD').and_return({"XXBTZUSD" => {
+            "asks" => [ [ "1500", "1.537", 1488568657 ], [ "1200", "1.234", 1488568658]],
+            "bids" => [ [ "1500", "1.537", 1488568659 ], [ "1200", "1.234", 1488568660]]}})
+
+          allow(KrakenClient).to receive(:load).and_return(mocked_kraken)
+
+          mocked_bcte = double
+          allow(mocked_bcte).to receive(:json).and_return({"btc_usd" => {
+            "asks" => [[1251, 2.148485],[1351, 0.016032]],
+            "bids" => [[900, 2.148485],[1200, 0.016032]]
+            }})
+          allow(Btce::Depth).to receive(:new).with("btc_usd").and_return(mocked_bcte)
+          post '/opportunities'
+        end
 
         it 'creates a opportunity' do
-          expect(json['bid']['value']).to eq(255)
-          expect(json['ask']['value']).to eq(255)
+
+          expect(json['bid']['value']).to eq(1500)
+          expect(json['ask']['value']).to eq(1200)
         end
 
         it 'returns status code 201' do
