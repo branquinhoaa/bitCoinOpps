@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 require 'rails_helper'
 
 RSpec.describe 'Opportunity API', type: :request do
@@ -45,55 +46,53 @@ RSpec.describe 'Opportunity API', type: :request do
     end
   end
 
+  # Test suite for POST /opportunities
+  describe 'POST /opportunities' do
+    context 'when the request is valid' do
+      before do
+        mocked_kraken = double
+        allow(mocked_kraken).to receive(:public).and_return(mocked_kraken)
+        allow(mocked_kraken).to receive(:order_book).with('XXBTZUSD').and_return('XXBTZUSD' => {
+                                                                                   'asks' => [['1500', '1.537', 1_488_568_657], ['1200', '1.234', 1_488_568_658]],
+                                                                                   'bids' => [['1500', '1.537', 1_488_568_659], ['1200', '1.234', 1_488_568_660]]
+                                                                                 })
 
-    # Test suite for POST /opportunities
-    describe 'POST /opportunities' do
+        allow(KrakenClient).to receive(:load).and_return(mocked_kraken)
 
-      context 'when the request is valid' do
-        before do
-          mocked_kraken = double
-          allow(mocked_kraken).to receive(:public).and_return(mocked_kraken)
-          allow(mocked_kraken).to receive(:order_book).with('XXBTZUSD').and_return({"XXBTZUSD" => {
-            "asks" => [ [ "1500", "1.537", 1488568657 ], [ "1200", "1.234", 1488568658]],
-            "bids" => [ [ "1500", "1.537", 1488568659 ], [ "1200", "1.234", 1488568660]]}})
+        mocked_bcte = double
+        allow(mocked_bcte).to receive(:json).and_return('btc_usd' => {
+                                                          'asks' => [[1151, 2.148485], [1351, 0.016032]],
+                                                          'bids' => [[900, 2.148485], [1200, 0.016032]]
+                                                        })
+        allow(Btce::Depth).to receive(:new).with('btc_usd').and_return(mocked_bcte)
+        post '/opportunities'
+      end
 
-          allow(KrakenClient).to receive(:load).and_return(mocked_kraken)
+      it 'creates an opportunity' do
+        expect(json['id']).to_not be_nil
+      end
 
-          mocked_bcte = double
-          allow(mocked_bcte).to receive(:json).and_return({"btc_usd" => {
-            "asks" => [[1151, 2.148485],[1351, 0.016032]],
-            "bids" => [[900, 2.148485],[1200, 0.016032]]
-            }})
-          allow(Btce::Depth).to receive(:new).with("btc_usd").and_return(mocked_bcte)
-          post '/opportunities'
+      describe 'creates an opportunity' do
+        it 'with a largest bid' do
+          expect(json['bid']['value']).to eq(1500)
         end
-
-        it 'creates an opportunity' do
-          expect(json['id']).to_not be_nil
-        end
-
-        describe 'creates an opportunity' do
-          it 'with a largest bid' do
-            expect(json['bid']['value']).to eq(1500)
-          end
-          it 'with an lowest ask' do
-            expect(json['ask']['value']).to eq(1151.0)
-          end
-        end
-
-        it 'returns status code 201' do
-          expect(response).to have_http_status(201)
+        it 'with an lowest ask' do
+          expect(json['ask']['value']).to eq(1151.0)
         end
       end
+
+      it 'returns status code 201' do
+        expect(response).to have_http_status(201)
+      end
     end
+  end
 
-    # Test suite for DELETE /opportunities/:id
-   describe 'DELETE /opportunities/:id' do
-     before { delete "/opportunities/#{opportunity_id}" }
+  # Test suite for DELETE /opportunities/:id
+  describe 'DELETE /opportunities/:id' do
+    before { delete "/opportunities/#{opportunity_id}" }
 
-     it 'returns status code 204' do
-       expect(response).to have_http_status(204)
-     end
-   end
-
+    it 'returns status code 204' do
+      expect(response).to have_http_status(204)
+    end
+  end
 end

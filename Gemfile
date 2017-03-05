@@ -9,6 +9,7 @@ end
 gem 'kraken_client', '~> 1.1.5'
 gem 'btce'
 
+gem 'rubocop', require: false
 gem "active_model_serializers"
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
 gem 'rails', '~> 5.0.1'

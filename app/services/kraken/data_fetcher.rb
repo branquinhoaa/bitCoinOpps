@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module KRAKEN
   class DataFetcher
     def initialize
@@ -12,6 +13,5 @@ module KRAKEN
     def asks
       @data['XXBTZUSD']['asks']
     end
-
   end
 end
