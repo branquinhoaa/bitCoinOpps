@@ -60,8 +60,7 @@ class OpportunitiesController < ApplicationController
   def largest_bid
     kraken = get_kraken_data
     btce = get_btce_data
-
-    higher_kraken = kraken['XXBTZUSD']['bids'].max_by{ |order| order[0] } #here I choose the best kraken bid (more expensive)
+    higher_kraken = kraken['XXBTZUSD']["bids"].max_by{ |order| order[0] } #here I choose the best kraken bid (more expensive)
     higher_btce = btce.json["btc_usd"]["bids"].max_by{ |order| order[0] } #return value, amount
 
     #build the bid object with the highest bid value
